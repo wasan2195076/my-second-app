@@ -14,6 +14,7 @@ const keys = {};
 let cameraX = 0;
 let gameState = "playing";
 let lastTime = 0;
+let currentStage = 1;
 
 const player = {
   x: 100, y: 300, width: 32, height: 46, vx: 0, vy: 0,
@@ -21,34 +22,60 @@ const player = {
   attackTimer: 0, invincible: 0
 };
 
-const platforms = [
-  { x: 0, y: 470, width: 620, height: 70 },
-  { x: 760, y: 470, width: 520, height: 70 },
-  { x: 1420, y: 470, width: 460, height: 70 },
-  { x: 2020, y: 470, width: 570, height: 70 },
-  { x: 2730, y: 470, width: 370, height: 70 },
-  { x: 300, y: 360, width: 160, height: 20 },
-  { x: 850, y: 350, width: 170, height: 20 },
-  { x: 1110, y: 280, width: 130, height: 20 },
-  { x: 1530, y: 350, width: 180, height: 20 },
-  { x: 2200, y: 340, width: 170, height: 20 },
-  { x: 2450, y: 270, width: 120, height: 20 }
+const levelDefinitions = [
+  {
+    goalX: 2920,
+    platforms: [
+      { x: 0, y: 470, width: 620, height: 70 }, { x: 760, y: 470, width: 520, height: 70 },
+      { x: 1420, y: 470, width: 460, height: 70 }, { x: 2020, y: 470, width: 570, height: 70 },
+      { x: 2730, y: 470, width: 370, height: 70 }, { x: 300, y: 360, width: 160, height: 20 },
+      { x: 850, y: 350, width: 170, height: 20 }, { x: 1110, y: 280, width: 130, height: 20 },
+      { x: 1530, y: 350, width: 180, height: 20 }, { x: 2200, y: 340, width: 170, height: 20 },
+      { x: 2450, y: 270, width: 120, height: 20 }
+    ],
+    enemies: [
+      { x: 420, y: 428, min: 250, max: 580, vx: 65 }, { x: 930, y: 428, min: 780, max: 1240, vx: -70 },
+      { x: 1580, y: 428, min: 1440, max: 1830, vx: 75 }, { x: 2240, y: 428, min: 2050, max: 2520, vx: -80 }
+    ]
+  },
+  {
+    goalX: 2920,
+    platforms: [
+      { x: 0, y: 470, width: 440, height: 70 }, { x: 600, y: 470, width: 470, height: 70 },
+      { x: 1230, y: 470, width: 390, height: 70 }, { x: 1770, y: 470, width: 450, height: 70 },
+      { x: 2400, y: 470, width: 700, height: 70 }, { x: 180, y: 340, width: 150, height: 20 },
+      { x: 700, y: 300, width: 150, height: 20 }, { x: 1110, y: 380, width: 120, height: 20 },
+      { x: 1400, y: 280, width: 160, height: 20 }, { x: 1900, y: 340, width: 170, height: 20 },
+      { x: 2300, y: 260, width: 140, height: 20 }, { x: 2600, y: 350, width: 170, height: 20 }
+    ],
+    enemies: [
+      { x: 280, y: 428, min: 80, max: 400, vx: 110 }, { x: 760, y: 428, min: 620, max: 1030, vx: -120 },
+      { x: 1360, y: 428, min: 1250, max: 1570, vx: 125 }, { x: 1940, y: 428, min: 1780, max: 2160, vx: -130 },
+      { x: 2520, y: 428, min: 2420, max: 2850, vx: 145 },
+      { x: 2680, y: 308, min: 2600, max: 2720, vx: -75 }
+    ]
+  }
 ];
+let platforms = [];
+let enemies = [];
+let goalX = levelDefinitions[0].goalX;
 
-const enemies = [
-  { x: 420, y: 428, width: 34, height: 42, min: 250, max: 580, vx: 65, alive: true },
-  { x: 930, y: 428, width: 34, height: 42, min: 780, max: 1240, vx: -70, alive: true },
-  { x: 1580, y: 428, width: 34, height: 42, min: 1440, max: 1830, vx: 75, alive: true },
-  { x: 2240, y: 428, width: 34, height: 42, min: 2050, max: 2520, vx: -80, alive: true }
-];
+function loadLevel(stage) {
+  const level = levelDefinitions[stage - 1];
+  platforms = level.platforms.map((platform) => ({ ...platform }));
+  enemies = level.enemies.map((enemy) => ({ ...enemy, width: 34, height: 42, alive: true }));
+  goalX = level.goalX;
+}
 
 function resetGame() {
+  currentStage = 1;
+  loadLevel(currentStage);
   Object.assign(player, { x: 100, y: 300, vx: 0, vy: 0, hp: 3, grounded: false, facing: 1, attackTimer: 0, invincible: 0 });
-  enemies.forEach((enemy, index) => Object.assign(enemy, { alive: true, x: [420, 930, 1580, 2240][index] }));
   cameraX = 0;
   gameState = "playing";
   message.classList.add("hidden");
-  statusElement.textContent = "ゴールを目指そう";
+  restartButton.textContent = "もう一度プレイ";
+  statusElement.textContent = "STAGE 1　ゴールを目指そう";
   updateHp();
 }
 
@@ -72,11 +99,24 @@ function hurt() {
 }
 
 function endGame(won) {
+  if (won && currentStage === 1) {
+    currentStage = 2;
+    loadLevel(currentStage);
+    Object.assign(player, { x: 100, y: 300, vx: 0, vy: 0, grounded: false, facing: 1, attackTimer: 0, invincible: 0 });
+    cameraX = 0;
+    gameState = "stage-clear";
+    messageTitle.textContent = "STAGE 1 CLEAR!";
+    messageText.textContent = "次のステージへ進もう。";
+    restartButton.textContent = "ステージ2へ";
+    statusElement.textContent = "ステージ1クリア！";
+    message.classList.remove("hidden");
+    return;
+  }
   gameState = won ? "won" : "lost";
-  messageTitle.textContent = won ? "STAGE CLEAR!" : "GAME OVER";
+  messageTitle.textContent = won ? "STAGE 2 CLEAR!" : "ゲームオーバー";
   messageText.textContent = won ? "月明かりのゴールに到着しました。" : "もう一度、ゴールを目指そう。";
   message.classList.remove("hidden");
-  statusElement.textContent = won ? "クリア！" : "リトライしてね";
+  statusElement.textContent = won ? "全ステージクリア！" : "リトライしてね";
 }
 
 function update(dt) {
@@ -121,13 +161,17 @@ function update(dt) {
 
   cameraX += ((player.x - WIDTH * 0.38) - cameraX) * Math.min(1, dt * 5);
   cameraX = Math.max(0, Math.min(worldWidth - WIDTH, cameraX));
-  if (player.x > 2920) endGame(true);
+  if (player.x > goalX) endGame(true);
 }
 
 function draw() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
   const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  gradient.addColorStop(0, "#090f2d"); gradient.addColorStop(0.55, "#182052"); gradient.addColorStop(1, "#422d62");
+  if (currentStage === 2) {
+    gradient.addColorStop(0, "#210d2d"); gradient.addColorStop(0.55, "#3a1745"); gradient.addColorStop(1, "#702c4d");
+  } else {
+    gradient.addColorStop(0, "#090f2d"); gradient.addColorStop(0.55, "#182052"); gradient.addColorStop(1, "#422d62");
+  }
   ctx.fillStyle = gradient; ctx.fillRect(0, 0, WIDTH, HEIGHT);
   drawBackdrop();
   drawStars();
@@ -142,15 +186,27 @@ function draw() {
 function drawBackdrop() {
   const moonX = 760 - cameraX * 0.15;
   const glow = ctx.createRadialGradient(moonX, 95, 20, moonX, 95, 125);
-  glow.addColorStop(0, "#d9f8ff55"); glow.addColorStop(1, "#7b8dff00");
+  const isSecondStage = currentStage === 2;
+  glow.addColorStop(0, isSecondStage ? "#ff9b8355" : "#d9f8ff55");
+  glow.addColorStop(1, isSecondStage ? "#ff527000" : "#7b8dff00");
   ctx.fillStyle = glow; ctx.fillRect(0, 0, WIDTH, 260);
-  ctx.fillStyle = "#e5f5ff"; ctx.beginPath(); ctx.arc(moonX, 95, 42, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#b9cfff"; ctx.beginPath(); ctx.arc(moonX - 13, 84, 8, 0, Math.PI * 2); ctx.arc(moonX + 15, 108, 6, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#10183d99";
+  ctx.fillStyle = isSecondStage ? "#ffb08d" : "#e5f5ff";
+  ctx.beginPath(); ctx.arc(moonX, 95, 42, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isSecondStage ? "#9c3d62" : "#b9cfff";
+  ctx.beginPath(); ctx.arc(moonX - 13, 84, 8, 0, Math.PI * 2); ctx.arc(moonX + 15, 108, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = isSecondStage ? "#2b123b99" : "#10183d99";
   for (let i = 0; i < 12; i++) {
     const x = i * 110 - cameraX * 0.08;
     const height = 45 + (i * 23) % 65;
     ctx.beginPath(); ctx.moveTo(x, 470); ctx.lineTo(x + 55, 470 - height); ctx.lineTo(x + 110, 470); ctx.fill();
+  }
+  if (isSecondStage) {
+    ctx.strokeStyle = "#ff6b8a55";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+      const x = (i * 230 - cameraX * 0.2) % WIDTH;
+      ctx.beginPath(); ctx.moveTo(x, 190); ctx.lineTo(x + 120, 470); ctx.stroke();
+    }
   }
 }
 
@@ -183,8 +239,8 @@ function drawEnemy(enemy) {
 
 function drawGoal() {
   ctx.shadowColor = "#69f0c1"; ctx.shadowBlur = 18;
-  ctx.fillStyle = "#69f0c1"; ctx.fillRect(2960, 300, 8, 170);
-  ctx.fillStyle = "#ff5c8a"; ctx.beginPath(); ctx.moveTo(2968, 300); ctx.lineTo(3050, 325); ctx.lineTo(2968, 350); ctx.fill();
+  ctx.fillStyle = "#69f0c1"; ctx.fillRect(goalX, 300, 8, 170);
+  ctx.fillStyle = "#ff5c8a"; ctx.beginPath(); ctx.moveTo(goalX + 8, 300); ctx.lineTo(goalX + 90, 325); ctx.lineTo(goalX + 8, 350); ctx.fill();
   ctx.shadowBlur = 0;
 }
 
@@ -211,7 +267,15 @@ window.addEventListener("keydown", (event) => {
   if ((event.key.toLowerCase() === "x" || event.key === "Enter") && gameState === "playing") player.attackTimer = 0.18;
 });
 window.addEventListener("keyup", (event) => { keys[event.key] = false; });
-restartButton.addEventListener("click", resetGame);
+restartButton.addEventListener("click", () => {
+  if (gameState === "stage-clear") {
+    gameState = "playing";
+    message.classList.add("hidden");
+    statusElement.textContent = "STAGE 2　ゴールを目指そう";
+    return;
+  }
+  resetGame();
+});
 
 function loop(timestamp) {
   const dt = Math.min((timestamp - lastTime) / 1000 || 0, 0.033);
@@ -219,5 +283,6 @@ function loop(timestamp) {
   update(dt); draw(); requestAnimationFrame(loop);
 }
 
+loadLevel(currentStage);
 updateHp();
 requestAnimationFrame(loop);
