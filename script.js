@@ -15,6 +15,7 @@ let cameraX = 0;
 let gameState = "playing";
 let lastTime = 0;
 let currentStage = 1;
+let projectiles = [];
 
 const player = {
   x: 100, y: 300, width: 32, height: 46, vx: 0, vy: 0,
@@ -54,6 +55,25 @@ const levelDefinitions = [
       { x: 2520, y: 428, min: 2420, max: 2850, vx: 145 },
       { x: 2680, y: 308, min: 2600, max: 2720, vx: -75 }
     ]
+  },
+  {
+    goalX: 2920,
+    platforms: [
+      { x: 0, y: 470, width: 500, height: 70 }, { x: 650, y: 470, width: 390, height: 70 },
+      { x: 1180, y: 470, width: 420, height: 70 }, { x: 1750, y: 470, width: 350, height: 70 },
+      { x: 2250, y: 470, width: 850, height: 70 }, { x: 260, y: 350, width: 150, height: 20 },
+      { x: 760, y: 290, width: 150, height: 20 }, { x: 1070, y: 370, width: 120, height: 20 },
+      { x: 1320, y: 270, width: 150, height: 20 }, { x: 1830, y: 330, width: 160, height: 20 },
+      { x: 2150, y: 250, width: 140, height: 20 }, { x: 2500, y: 340, width: 160, height: 20 }
+    ],
+    enemies: [
+      { type: "sweeper", x: 330, y: 428, min: 100, max: 470, vx: 70 },
+      { type: "skeleton", x: 820, y: 248, min: 760, max: 860, vx: 35, shootTimer: 1.2 },
+      { type: "sweeper", x: 1320, y: 428, min: 1210, max: 1570, vx: 80 },
+      { type: "skeleton", x: 1880, y: 288, min: 1830, max: 1950, vx: -30, shootTimer: 0.5 },
+      { type: "sweeper", x: 2420, y: 428, min: 2280, max: 2700, vx: 95 },
+      { type: "skeleton", x: 2650, y: 308, min: 2520, max: 2740, vx: -40, shootTimer: 1.8 }
+    ]
   }
 ];
 let platforms = [];
@@ -63,7 +83,8 @@ let goalX = levelDefinitions[0].goalX;
 function loadLevel(stage) {
   const level = levelDefinitions[stage - 1];
   platforms = level.platforms.map((platform) => ({ ...platform }));
-  enemies = level.enemies.map((enemy) => ({ ...enemy, width: 34, height: 42, alive: true }));
+  enemies = level.enemies.map((enemy) => ({ ...enemy, width: 34, height: 42, alive: true, fuse: 0 }));
+  projectiles = [];
   goalX = level.goalX;
 }
 
@@ -72,6 +93,7 @@ function resetGame() {
   loadLevel(currentStage);
   Object.assign(player, { x: 100, y: 300, vx: 0, vy: 0, hp: 3, grounded: false, facing: 1, attackTimer: 0, invincible: 0 });
   cameraX = 0;
+  projectiles = [];
   gameState = "playing";
   message.classList.add("hidden");
   restartButton.textContent = "もう一度プレイ";
@@ -99,21 +121,22 @@ function hurt() {
 }
 
 function endGame(won) {
-  if (won && currentStage === 1) {
-    currentStage = 2;
+  if (won && currentStage < 3) {
+    const clearedStage = currentStage;
+    currentStage++;
     loadLevel(currentStage);
     Object.assign(player, { x: 100, y: 300, vx: 0, vy: 0, grounded: false, facing: 1, attackTimer: 0, invincible: 0 });
     cameraX = 0;
     gameState = "stage-clear";
-    messageTitle.textContent = "STAGE 1 CLEAR!";
+    messageTitle.textContent = `STAGE ${clearedStage} CLEAR!`;
     messageText.textContent = "次のステージへ進もう。";
-    restartButton.textContent = "ステージ2へ";
-    statusElement.textContent = "ステージ1クリア！";
+    restartButton.textContent = `ステージ${currentStage}へ`;
+    statusElement.textContent = `ステージ${clearedStage}クリア！`;
     message.classList.remove("hidden");
     return;
   }
   gameState = won ? "won" : "lost";
-  messageTitle.textContent = won ? "STAGE 2 CLEAR!" : "ゲームオーバー";
+  messageTitle.textContent = won ? "STAGE 3 CLEAR!" : "ゲームオーバー";
   messageText.textContent = won ? "月明かりのゴールに到着しました。" : "もう一度、ゴールを目指そう。";
   message.classList.remove("hidden");
   statusElement.textContent = won ? "全ステージクリア！" : "リトライしてね";
@@ -150,14 +173,47 @@ function update(dt) {
 
   enemies.forEach((enemy) => {
     if (!enemy.alive) return;
+    const distanceToPlayer = player.x - enemy.x;
+    if (enemy.type === "sweeper" && Math.abs(distanceToPlayer) < 520) {
+      enemy.vx = Math.sign(distanceToPlayer || 1) * 105;
+    }
     enemy.x += enemy.vx * dt;
     if (enemy.x < enemy.min || enemy.x > enemy.max) enemy.vx *= -1;
+    if (enemy.type === "skeleton") {
+      enemy.shootTimer -= dt;
+      if (enemy.shootTimer <= 0 && Math.abs(distanceToPlayer) < 700) {
+        const direction = Math.sign(distanceToPlayer || 1);
+        projectiles.push({
+          x: enemy.x + (direction > 0 ? enemy.width : -18), y: enemy.y + 17,
+          width: 18, height: 4, vx: direction * 340, alive: true
+        });
+        enemy.shootTimer = 1.7;
+      }
+    }
     if (intersects(player, enemy)) {
       const attackBox = { x: player.facing > 0 ? player.x + player.width : player.x - 42, y: player.y + 8, width: 42, height: 30 };
       if (player.attackTimer > 0 && intersects(attackBox, enemy)) enemy.alive = false;
-      else hurt();
+      else if (enemy.type === "sweeper") {
+        enemy.fuse += dt;
+        if (enemy.fuse > 0.45) {
+          enemy.alive = false;
+          hurt();
+        }
+      } else hurt();
     }
   });
+
+  projectiles.forEach((projectile) => {
+    if (!projectile.alive) return;
+    projectile.x += projectile.vx * dt;
+    if (intersects(player, projectile)) {
+      projectile.alive = false;
+      hurt();
+    } else if (projectile.x < cameraX - 80 || projectile.x > cameraX + WIDTH + 80) {
+      projectile.alive = false;
+    }
+  });
+  projectiles = projectiles.filter((projectile) => projectile.alive);
 
   cameraX += ((player.x - WIDTH * 0.38) - cameraX) * Math.min(1, dt * 5);
   cameraX = Math.max(0, Math.min(worldWidth - WIDTH, cameraX));
@@ -167,7 +223,9 @@ function update(dt) {
 function draw() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
   const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  if (currentStage === 2) {
+  if (currentStage === 3) {
+    gradient.addColorStop(0, "#101820"); gradient.addColorStop(0.55, "#263238"); gradient.addColorStop(1, "#3e2723");
+  } else if (currentStage === 2) {
     gradient.addColorStop(0, "#18253d"); gradient.addColorStop(0.55, "#334d63"); gradient.addColorStop(1, "#1d2930");
   } else {
     gradient.addColorStop(0, "#79c8eb"); gradient.addColorStop(0.7, "#b8e5f2"); gradient.addColorStop(1, "#75a64f");
@@ -179,11 +237,27 @@ function draw() {
   enemies.forEach(drawEnemy);
   drawGoal();
   drawPlayer();
+  projectiles.forEach(drawProjectile);
   ctx.restore();
 }
 
 function drawBackdrop() {
   const isSecondStage = currentStage === 2;
+  const isThirdStage = currentStage === 3;
+  if (isThirdStage) {
+    ctx.fillStyle = "#171b20";
+    ctx.fillRect(0, 0, WIDTH, 470);
+    for (let i = 0; i < 13; i++) {
+      const x = i * 90 - cameraX * 0.08;
+      ctx.fillStyle = i % 2 ? "#263238" : "#1e272e";
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 45, 75 + (i % 3) * 35); ctx.lineTo(x + 90, 0); ctx.fill();
+      ctx.fillStyle = "#455a64";
+      ctx.fillRect(x + 25, 120 + (i % 2) * 50, 10, 55);
+    }
+    ctx.fillStyle = "#ef6c00";
+    for (let i = 0; i < 7; i++) ctx.fillRect(i * 170 - cameraX * 0.16, 420, 38, 5);
+    return;
+  }
   ctx.fillStyle = isSecondStage ? "#17232b" : "#fff3a6";
   ctx.fillRect(760 - cameraX * 0.15, 55, 54, 54);
   drawCloud(150 - cameraX * 0.08, 92, 1);
@@ -239,6 +313,20 @@ function drawPlatform(platform) {
 
 function drawEnemy(enemy) {
   if (!enemy.alive) return;
+  if (enemy.type === "skeleton") {
+    drawSkeleton(enemy);
+    return;
+  }
+  if (enemy.type === "sweeper") {
+    const flashing = enemy.fuse > 0 && Math.floor(enemy.fuse * 12) % 2;
+    ctx.fillStyle = flashing ? "#e8f5e9" : "#66bb6a";
+    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    ctx.fillStyle = "#1b5e20";
+    ctx.fillRect(enemy.x + 6, enemy.y + 9, 8, 8); ctx.fillRect(enemy.x + 20, enemy.y + 9, 8, 8);
+    ctx.fillRect(enemy.x + 12, enemy.y + 22, 10, 13);
+    ctx.fillStyle = "#43a047"; ctx.fillRect(enemy.x + 3, enemy.y + 36, 10, 6); ctx.fillRect(enemy.x + 21, enemy.y + 36, 10, 6);
+    return;
+  }
   ctx.fillStyle = "#4f8f3a"; ctx.fillRect(enemy.x, enemy.y + 8, enemy.width, enemy.height - 8);
   ctx.fillStyle = "#6eaa43"; ctx.fillRect(enemy.x, enemy.y, enemy.width, 12);
   ctx.fillStyle = "#263238";
@@ -246,6 +334,25 @@ function drawEnemy(enemy) {
   ctx.fillStyle = "#dce775"; ctx.fillRect(enemy.x + 8, enemy.y + 32, enemy.width - 16, 4);
   ctx.fillStyle = "#33612f";
   ctx.fillRect(enemy.x + 3, enemy.y + 38, 10, 4); ctx.fillRect(enemy.x + 21, enemy.y + 38, 10, 4);
+}
+
+function drawSkeleton(enemy) {
+  ctx.fillStyle = "#eceff1";
+  ctx.fillRect(enemy.x + 6, enemy.y, 22, 18);
+  ctx.fillRect(enemy.x + 9, enemy.y + 18, 16, 18);
+  ctx.fillRect(enemy.x + 2, enemy.y + 19, 7, 18); ctx.fillRect(enemy.x + 25, enemy.y + 19, 7, 18);
+  ctx.fillRect(enemy.x + 7, enemy.y + 36, 7, 6); ctx.fillRect(enemy.x + 21, enemy.y + 36, 7, 6);
+  ctx.fillStyle = "#37474f";
+  ctx.fillRect(enemy.x + 10, enemy.y + 6, 5, 6); ctx.fillRect(enemy.x + 20, enemy.y + 6, 5, 6);
+  ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(enemy.x + 28, enemy.y + 18); ctx.lineTo(enemy.x + 34, enemy.y + 38); ctx.stroke();
+}
+
+function drawProjectile(projectile) {
+  ctx.fillStyle = "#d7ccc8";
+  ctx.fillRect(projectile.x, projectile.y, projectile.width, projectile.height);
+  ctx.fillStyle = "#8d6e63";
+  ctx.fillRect(projectile.x + 4, projectile.y + 1, 10, 2);
 }
 
 function drawGoal() {
@@ -283,7 +390,7 @@ restartButton.addEventListener("click", () => {
   if (gameState === "stage-clear") {
     gameState = "playing";
     message.classList.add("hidden");
-    statusElement.textContent = "STAGE 2　ゴールを目指そう";
+    statusElement.textContent = `STAGE ${currentStage}　ゴールを目指そう`;
     return;
   }
   resetGame();
