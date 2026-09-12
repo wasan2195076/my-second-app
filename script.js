@@ -208,6 +208,29 @@ function drawBackdrop() {
       ctx.beginPath(); ctx.moveTo(x, 190); ctx.lineTo(x + 120, 470); ctx.stroke();
     }
   }
+  drawCityscape(isSecondStage);
+  drawScanlines();
+}
+
+function drawCityscape(isSecondStage) {
+  const colors = isSecondStage ? ["#321535", "#481a42", "#5d2249"] : ["#101a3d", "#152653", "#1c3065"];
+  for (let i = 0; i < 15; i++) {
+    const width = 42 + (i * 19) % 48;
+    const height = 90 + (i * 37) % 125;
+    const x = i * 78 - (cameraX * 0.12 % 78);
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(x, 470 - height, width, height);
+    ctx.fillStyle = i % 2 ? "#69f0c1aa" : "#ff5c8aaa";
+    for (let y = 470 - height + 18; y < 455; y += 25) {
+      ctx.fillRect(x + 9, y, 6, 3);
+      if (width > 55) ctx.fillRect(x + 28, y, 6, 3);
+    }
+  }
+}
+
+function drawScanlines() {
+  ctx.fillStyle = "#8be9fd0d";
+  for (let y = 0; y < HEIGHT; y += 8) ctx.fillRect(0, y, WIDTH, 1);
 }
 
 function drawStars() {
@@ -227,33 +250,44 @@ function drawPlatform(platform) {
   ctx.fillStyle = "#34558a"; ctx.fillRect(platform.x, platform.y + 8, platform.width, 3);
   ctx.fillStyle = "#0a102b99";
   for (let x = platform.x + 18; x < platform.x + platform.width; x += 42) ctx.fillRect(x, platform.y + 25, 2, platform.height - 25);
+  ctx.fillStyle = "#ff5c8a99";
+  ctx.fillRect(platform.x + 10, platform.y + platform.height - 7, Math.min(34, platform.width - 20), 2);
 }
 
 function drawEnemy(enemy) {
   if (!enemy.alive) return;
-  ctx.fillStyle = "#ff4f79"; ctx.fillRect(enemy.x, enemy.y + 5, enemy.width, enemy.height - 5);
-  ctx.fillStyle = "#ff9b6a"; ctx.fillRect(enemy.x + 5, enemy.y, enemy.width - 10, 8);
-  ctx.fillStyle = "#24163f"; ctx.fillRect(enemy.x + 7, enemy.y + 15, 6, 6); ctx.fillRect(enemy.x + 21, enemy.y + 15, 6, 6);
+  ctx.shadowColor = "#ff367f"; ctx.shadowBlur = 8;
+  ctx.fillStyle = "#b62e6c"; ctx.fillRect(enemy.x, enemy.y + 5, enemy.width, enemy.height - 5);
+  ctx.fillStyle = "#ff5c8a"; ctx.fillRect(enemy.x + 5, enemy.y, enemy.width - 10, 8);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#141535"; ctx.fillRect(enemy.x + 5, enemy.y + 13, enemy.width - 10, 11);
+  ctx.fillStyle = "#69f0c1"; ctx.fillRect(enemy.x + 8, enemy.y + 17, 7, 3); ctx.fillRect(enemy.x + 20, enemy.y + 17, 7, 3);
   ctx.fillStyle = "#ffcf70"; ctx.fillRect(enemy.x + 8, enemy.y + 31, enemy.width - 16, 4);
+  ctx.fillStyle = "#27143d"; ctx.fillRect(enemy.x + 2, enemy.y + 39, 10, 4); ctx.fillRect(enemy.x + 22, enemy.y + 39, 10, 4);
 }
 
 function drawGoal() {
   ctx.shadowColor = "#69f0c1"; ctx.shadowBlur = 18;
-  ctx.fillStyle = "#69f0c1"; ctx.fillRect(goalX, 300, 8, 170);
-  ctx.fillStyle = "#ff5c8a"; ctx.beginPath(); ctx.moveTo(goalX + 8, 300); ctx.lineTo(goalX + 90, 325); ctx.lineTo(goalX + 8, 350); ctx.fill();
+  ctx.strokeStyle = "#69f0c1"; ctx.lineWidth = 7;
+  ctx.strokeRect(goalX, 300, 78, 170);
+  ctx.fillStyle = "#ff5c8a"; ctx.fillRect(goalX + 11, 316, 56, 3);
+  ctx.fillStyle = "#69f0c1"; ctx.fillRect(goalX + 8, 360, 62, 2);
   ctx.shadowBlur = 0;
 }
 
 function drawPlayer() {
   if (player.invincible > 0 && Math.floor(player.invincible * 12) % 2) return;
-  ctx.fillStyle = "#7bdff2"; ctx.fillRect(player.x, player.y + 7, player.width, player.height - 7);
-  ctx.fillStyle = "#d8f7ff"; ctx.fillRect(player.x + 5, player.y, player.width - 10, 10);
+  ctx.shadowColor = "#35d9ff"; ctx.shadowBlur = 10;
+  ctx.fillStyle = "#39b9d5"; ctx.fillRect(player.x, player.y + 7, player.width, player.height - 7);
+  ctx.fillStyle = "#e8fcff"; ctx.fillRect(player.x + 5, player.y, player.width - 10, 10);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#d63c9a"; ctx.fillRect(player.x + 8, player.y + 3, player.width - 16, 5);
   ctx.fillStyle = "#20204b"; ctx.fillRect(player.x + (player.facing > 0 ? 21 : 5), player.y + 14, 6, 6);
   ctx.fillStyle = "#ff5c8a";
   ctx.fillRect(player.x + (player.facing > 0 ? -7 : player.width), player.y + 20, 7, 18);
   if (player.attackTimer > 0) {
-    ctx.shadowColor = "#fff09a"; ctx.shadowBlur = 12;
-    ctx.fillStyle = "#fff09a";
+    ctx.shadowColor = "#69f0c1"; ctx.shadowBlur = 15;
+    ctx.fillStyle = "#b8ffe9";
     const x = player.facing > 0 ? player.x + player.width : player.x - 42;
     ctx.fillRect(x, player.y + 14, 42, 8);
     ctx.shadowBlur = 0;

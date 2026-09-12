@@ -26,6 +26,7 @@ body {
   gap: 1rem;
   padding: 0.9rem 1rem;
   text-shadow: 0 0 14px #7bdff288;
+  border-bottom: 1px solid #69f0c155;
 }
 
 h1 {
@@ -40,10 +41,19 @@ h1 {
   gap: 1.4rem;
   color: #c5d0ff;
   font-size: 0.9rem;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 #hp { color: #ff5c8a; letter-spacing: 0.15em; text-shadow: 0 0 10px #ff397c; }
-#status { color: #69f0c1; }
+#status {
+  color: #69f0c1;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #69f0c177;
+  background: #0b1730aa;
+  box-shadow: inset 0 0 12px #69f0c122;
+}
 
 .game-frame {
   position: relative;
