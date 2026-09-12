@@ -168,13 +168,12 @@ function draw() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
   const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
   if (currentStage === 2) {
-    gradient.addColorStop(0, "#210d2d"); gradient.addColorStop(0.55, "#3a1745"); gradient.addColorStop(1, "#702c4d");
+    gradient.addColorStop(0, "#18253d"); gradient.addColorStop(0.55, "#334d63"); gradient.addColorStop(1, "#1d2930");
   } else {
-    gradient.addColorStop(0, "#090f2d"); gradient.addColorStop(0.55, "#182052"); gradient.addColorStop(1, "#422d62");
+    gradient.addColorStop(0, "#79c8eb"); gradient.addColorStop(0.7, "#b8e5f2"); gradient.addColorStop(1, "#75a64f");
   }
   ctx.fillStyle = gradient; ctx.fillRect(0, 0, WIDTH, HEIGHT);
   drawBackdrop();
-  drawStars();
   ctx.save(); ctx.translate(-cameraX, 0);
   platforms.forEach(drawPlatform);
   enemies.forEach(drawEnemy);
@@ -184,79 +183,92 @@ function draw() {
 }
 
 function drawBackdrop() {
-  const moonX = 760 - cameraX * 0.15;
-  const glow = ctx.createRadialGradient(moonX, 95, 20, moonX, 95, 125);
   const isSecondStage = currentStage === 2;
-  glow.addColorStop(0, isSecondStage ? "#ff9b8355" : "#d9f8ff55");
-  glow.addColorStop(1, isSecondStage ? "#ff527000" : "#7b8dff00");
-  ctx.fillStyle = glow; ctx.fillRect(0, 0, WIDTH, 260);
-  ctx.fillStyle = isSecondStage ? "#ffb08d" : "#e5f5ff";
-  ctx.beginPath(); ctx.arc(moonX, 95, 42, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = isSecondStage ? "#9c3d62" : "#b9cfff";
-  ctx.beginPath(); ctx.arc(moonX - 13, 84, 8, 0, Math.PI * 2); ctx.arc(moonX + 15, 108, 6, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = isSecondStage ? "#2b123b99" : "#10183d99";
-  for (let i = 0; i < 12; i++) {
-    const x = i * 110 - cameraX * 0.08;
-    const height = 45 + (i * 23) % 65;
-    ctx.beginPath(); ctx.moveTo(x, 470); ctx.lineTo(x + 55, 470 - height); ctx.lineTo(x + 110, 470); ctx.fill();
-  }
+  ctx.fillStyle = isSecondStage ? "#17232b" : "#fff3a6";
+  ctx.fillRect(760 - cameraX * 0.15, 55, 54, 54);
+  drawCloud(150 - cameraX * 0.08, 92, 1);
+  drawCloud(560 - cameraX * 0.08, 155, 0.8);
+  drawCloud(870 - cameraX * 0.08, 68, 1.2);
   if (isSecondStage) {
-    ctx.strokeStyle = "#ff6b8a55";
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 5; i++) {
-      const x = (i * 230 - cameraX * 0.2) % WIDTH;
-      ctx.beginPath(); ctx.moveTo(x, 190); ctx.lineTo(x + 120, 470); ctx.stroke();
+    ctx.fillStyle = "#18242b";
+    for (let i = 0; i < 14; i++) {
+      const x = i * 95 - cameraX * 0.12;
+      const height = 70 + (i * 31) % 110;
+      ctx.fillRect(x, 470 - height, 72, height);
+      ctx.fillStyle = "#8bc34a";
+      ctx.fillRect(x + 12, 470 - height - 8, 48, 8);
+      ctx.fillStyle = "#263238";
+    }
+  } else {
+    for (let i = 0; i < 9; i++) {
+      const x = i * 135 - cameraX * 0.1;
+      ctx.fillStyle = "#477b3d";
+      ctx.fillRect(x + 30, 360, 18, 110);
+      ctx.fillStyle = "#2e6b3b";
+      ctx.fillRect(x, 320, 78, 55);
+      ctx.fillRect(x + 15, 295, 48, 35);
     }
   }
 }
 
+function drawCloud(x, y, scale) {
+  ctx.fillStyle = "#ffffffcc";
+  ctx.fillRect(x, y, 120 * scale, 24 * scale);
+  ctx.fillRect(x + 22 * scale, y - 16 * scale, 55 * scale, 40 * scale);
+  ctx.fillRect(x + 66 * scale, y - 8 * scale, 40 * scale, 32 * scale);
+}
+
 function drawStars() {
-  for (let i = 0; i < 55; i++) {
-    ctx.fillStyle = i % 5 === 0 ? "#8be9fdcc" : "#ffffff99";
-    const x = (i * 173) % WIDTH; const y = 25 + (i * 67) % 240;
-    const size = i % 5 === 0 ? 3 : 2;
-    ctx.fillRect(x, y, size, size);
+  ctx.fillStyle = "#ffffff99";
+  for (let i = 0; i < 40; i++) {
+    ctx.fillRect((i * 173) % WIDTH, 25 + (i * 67) % 240, 2, 2);
   }
 }
 
 function drawPlatform(platform) {
-  const gradient = ctx.createLinearGradient(0, platform.y, 0, platform.y + platform.height);
-  gradient.addColorStop(0, "#263567"); gradient.addColorStop(1, "#151b3e");
-  ctx.fillStyle = gradient; ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-  ctx.fillStyle = "#69f0c1"; ctx.fillRect(platform.x, platform.y, platform.width, 6);
-  ctx.fillStyle = "#34558a"; ctx.fillRect(platform.x, platform.y + 8, platform.width, 3);
-  ctx.fillStyle = "#0a102b99";
-  for (let x = platform.x + 18; x < platform.x + platform.width; x += 42) ctx.fillRect(x, platform.y + 25, 2, platform.height - 25);
+  ctx.fillStyle = "#795548"; ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+  ctx.fillStyle = "#6aa646"; ctx.fillRect(platform.x, platform.y, platform.width, 9);
+  ctx.fillStyle = "#8d6e63";
+  for (let x = platform.x + 15; x < platform.x + platform.width; x += 38) {
+    ctx.fillRect(x, platform.y + 25, 16, 12);
+    ctx.fillRect(x + 20, platform.y + 48, 12, 10);
+  }
+  ctx.strokeStyle = "#4e342e"; ctx.lineWidth = 2;
+  ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
 }
 
 function drawEnemy(enemy) {
   if (!enemy.alive) return;
-  ctx.fillStyle = "#ff4f79"; ctx.fillRect(enemy.x, enemy.y + 5, enemy.width, enemy.height - 5);
-  ctx.fillStyle = "#ff9b6a"; ctx.fillRect(enemy.x + 5, enemy.y, enemy.width - 10, 8);
-  ctx.fillStyle = "#24163f"; ctx.fillRect(enemy.x + 7, enemy.y + 15, 6, 6); ctx.fillRect(enemy.x + 21, enemy.y + 15, 6, 6);
-  ctx.fillStyle = "#ffcf70"; ctx.fillRect(enemy.x + 8, enemy.y + 31, enemy.width - 16, 4);
+  ctx.fillStyle = "#4f8f3a"; ctx.fillRect(enemy.x, enemy.y + 8, enemy.width, enemy.height - 8);
+  ctx.fillStyle = "#6eaa43"; ctx.fillRect(enemy.x, enemy.y, enemy.width, 12);
+  ctx.fillStyle = "#263238";
+  ctx.fillRect(enemy.x + 6, enemy.y + 15, 8, 7); ctx.fillRect(enemy.x + 20, enemy.y + 15, 8, 7);
+  ctx.fillStyle = "#dce775"; ctx.fillRect(enemy.x + 8, enemy.y + 32, enemy.width - 16, 4);
+  ctx.fillStyle = "#33612f";
+  ctx.fillRect(enemy.x + 3, enemy.y + 38, 10, 4); ctx.fillRect(enemy.x + 21, enemy.y + 38, 10, 4);
 }
 
 function drawGoal() {
-  ctx.shadowColor = "#69f0c1"; ctx.shadowBlur = 18;
-  ctx.fillStyle = "#69f0c1"; ctx.fillRect(goalX, 300, 8, 170);
-  ctx.fillStyle = "#ff5c8a"; ctx.beginPath(); ctx.moveTo(goalX + 8, 300); ctx.lineTo(goalX + 90, 325); ctx.lineTo(goalX + 8, 350); ctx.fill();
-  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#5e35b1"; ctx.fillRect(goalX, 300, 78, 170);
+  ctx.fillStyle = "#7e57c2"; ctx.fillRect(goalX + 12, 312, 54, 146);
+  ctx.fillStyle = "#b39ddb"; ctx.fillRect(goalX + 24, 325, 30, 120);
+  ctx.strokeStyle = "#4527a0"; ctx.lineWidth = 5; ctx.strokeRect(goalX, 300, 78, 170);
 }
 
 function drawPlayer() {
   if (player.invincible > 0 && Math.floor(player.invincible * 12) % 2) return;
-  ctx.fillStyle = "#7bdff2"; ctx.fillRect(player.x, player.y + 7, player.width, player.height - 7);
-  ctx.fillStyle = "#d8f7ff"; ctx.fillRect(player.x + 5, player.y, player.width - 10, 10);
-  ctx.fillStyle = "#20204b"; ctx.fillRect(player.x + (player.facing > 0 ? 21 : 5), player.y + 14, 6, 6);
-  ctx.fillStyle = "#ff5c8a";
-  ctx.fillRect(player.x + (player.facing > 0 ? -7 : player.width), player.y + 20, 7, 18);
+  ctx.fillStyle = "#c98b5b"; ctx.fillRect(player.x + 5, player.y, 22, 16);
+  ctx.fillStyle = "#4b9bd6"; ctx.fillRect(player.x + 4, player.y + 16, 24, 20);
+  ctx.fillStyle = "#2f5d9b"; ctx.fillRect(player.x + 5, player.y + 36, 9, 10); ctx.fillRect(player.x + 18, player.y + 36, 9, 10);
+  ctx.fillStyle = "#d7efff";
+  ctx.fillRect(player.x + (player.facing > 0 ? 21 : 5), player.y + 6, 5, 5);
+  ctx.fillStyle = "#c98b5b";
+  ctx.fillRect(player.x + (player.facing > 0 ? -5 : player.width), player.y + 18, 5, 16);
   if (player.attackTimer > 0) {
-    ctx.shadowColor = "#fff09a"; ctx.shadowBlur = 12;
-    ctx.fillStyle = "#fff09a";
+    ctx.fillStyle = "#b0bec5";
     const x = player.facing > 0 ? player.x + player.width : player.x - 42;
-    ctx.fillRect(x, player.y + 14, 42, 8);
-    ctx.shadowBlur = 0;
+    ctx.fillRect(x, player.y + 14, 42, 7);
+    ctx.fillStyle = "#eceff1"; ctx.fillRect(x + 5, player.y + 14, 30, 3);
   }
 }
 
