@@ -1,0 +1,92 @@
+:root {
+  color-scheme: dark;
+  font-family: "Trebuchet MS", "Hiragino Kaku Gothic ProN", sans-serif;
+  background: #10132b;
+  color: #f8f4ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 0%, #29356e, #10132b 65%);
+}
+
+.game-shell { width: min(960px, 96vw); }
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+}
+
+h1 {
+  margin: 0;
+  color: #ffd166;
+  font-size: clamp(1.1rem, 3vw, 1.7rem);
+  letter-spacing: 0.12em;
+}
+
+.stats {
+  display: flex;
+  gap: 1.4rem;
+  color: #c8c9ef;
+  font-size: 0.9rem;
+}
+
+#hp { color: #ff6b8a; letter-spacing: 0.15em; }
+#status { color: #9fe7cf; }
+
+.game-frame {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid #6269bd;
+  border-radius: 12px;
+  box-shadow: 0 16px 45px #06071899, 0 0 0 5px #252b5b;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #18234b;
+  image-rendering: pixelated;
+}
+
+.controls {
+  margin: 1rem 0;
+  color: #a8add7;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  background: #10132bcc;
+  text-align: center;
+}
+
+.message.hidden { display: none; }
+.message h2 { margin: 0; color: #ffd166; font-size: 2.5rem; }
+.message p { margin: 0.7rem 0 1.2rem; color: #d8daf8; }
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  color: #19182c;
+  background: #ffd166;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover { background: #ffe49a; }

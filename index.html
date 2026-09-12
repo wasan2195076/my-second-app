@@ -1,11 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moon Runner</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>ようこそ、私のページへ！
-    
+<body>
+  <main class="game-shell">
+    <header class="hud">
+      <h1>MOON RUNNER</h1>
+      <div class="stats">
+        <span>HP <strong id="hp">❤❤❤</strong></span>
+        <span id="status">ゴールを目指そう</span>
+      </div>
+    </header>
+    <div class="game-frame">
+      <canvas id="game" width="960" height="540" aria-label="横スクロールアクションゲーム"></canvas>
+      <div id="message" class="message hidden">
+        <h2 id="message-title"></h2>
+        <p id="message-text"></p>
+        <button id="restart">もう一度プレイ</button>
+      </div>
+    </div>
+    <p class="controls">← → 移動　　スペース / ↑ ジャンプ　　X 攻撃</p>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
