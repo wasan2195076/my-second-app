@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   font-family: "Trebuchet MS", "Hiragino Kaku Gothic ProN", sans-serif;
-  background: #10132b;
+  background: #080b1d;
   color: #f8f4ff;
 }
 
@@ -12,22 +12,25 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at 50% 0%, #29356e, #10132b 65%);
+  background:
+    radial-gradient(circle at 50% -10%, #303b86 0, #11183e 38%, transparent 68%),
+    linear-gradient(145deg, #080b1d, #17122f 65%, #0b1028);
 }
 
-.game-shell { width: min(960px, 96vw); }
+.game-shell { width: min(960px, 96vw); filter: drop-shadow(0 18px 28px #0008); }
 
 .hud {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.8rem 1rem;
+  padding: 0.9rem 1rem;
+  text-shadow: 0 0 14px #7bdff288;
 }
 
 h1 {
   margin: 0;
-  color: #ffd166;
+  color: #8be9fd;
   font-size: clamp(1.1rem, 3vw, 1.7rem);
   letter-spacing: 0.12em;
 }
@@ -35,32 +38,32 @@ h1 {
 .stats {
   display: flex;
   gap: 1.4rem;
-  color: #c8c9ef;
+  color: #c5d0ff;
   font-size: 0.9rem;
 }
 
-#hp { color: #ff6b8a; letter-spacing: 0.15em; }
-#status { color: #9fe7cf; }
+#hp { color: #ff5c8a; letter-spacing: 0.15em; text-shadow: 0 0 10px #ff397c; }
+#status { color: #69f0c1; }
 
 .game-frame {
   position: relative;
   overflow: hidden;
-  border: 3px solid #6269bd;
+  border: 3px solid #6075d8;
   border-radius: 12px;
-  box-shadow: 0 16px 45px #06071899, 0 0 0 5px #252b5b;
+  box-shadow: 0 16px 45px #06071899, 0 0 0 5px #202754, 0 0 25px #536dff66;
 }
 
 canvas {
   display: block;
   width: 100%;
   height: auto;
-  background: #18234b;
+  background: #121938;
   image-rendering: pixelated;
 }
 
 .controls {
   margin: 1rem 0;
-  color: #a8add7;
+  color: #9da9db;
   text-align: center;
   font-size: 0.9rem;
 }
@@ -71,22 +74,22 @@ canvas {
   display: grid;
   place-content: center;
   justify-items: center;
-  background: #10132bcc;
+  background: linear-gradient(#0b1029dd, #171432e8);
   text-align: center;
 }
 
 .message.hidden { display: none; }
-.message h2 { margin: 0; color: #ffd166; font-size: 2.5rem; }
+.message h2 { margin: 0; color: #8be9fd; font-size: 2.5rem; text-shadow: 0 0 18px #35d9ff; }
 .message p { margin: 0.7rem 0 1.2rem; color: #d8daf8; }
 
 button {
   border: 0;
   border-radius: 999px;
   padding: 0.75rem 1.5rem;
-  color: #19182c;
-  background: #ffd166;
+  color: #101329;
+  background: #69f0c1;
   font-weight: 700;
   cursor: pointer;
 }
 
-button:hover { background: #ffe49a; }
+button:hover { background: #a0ffe0; box-shadow: 0 0 18px #69f0c1aa; }

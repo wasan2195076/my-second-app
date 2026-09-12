@@ -127,42 +127,80 @@ function update(dt) {
 function draw() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
   const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  gradient.addColorStop(0, "#182653"); gradient.addColorStop(1, "#4a3973");
+  gradient.addColorStop(0, "#090f2d"); gradient.addColorStop(0.55, "#182052"); gradient.addColorStop(1, "#422d62");
   ctx.fillStyle = gradient; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  ctx.fillStyle = "#fff2b2"; ctx.beginPath(); ctx.arc(760 - cameraX * 0.15, 95, 42, 0, Math.PI * 2); ctx.fill();
+  drawBackdrop();
   drawStars();
   ctx.save(); ctx.translate(-cameraX, 0);
-  platforms.forEach((p) => { ctx.fillStyle = "#3b2f5e"; ctx.fillRect(p.x, p.y, p.width, p.height); ctx.fillStyle = "#61c0a4"; ctx.fillRect(p.x, p.y, p.width, 8); });
+  platforms.forEach(drawPlatform);
   enemies.forEach(drawEnemy);
   drawGoal();
   drawPlayer();
   ctx.restore();
 }
 
+function drawBackdrop() {
+  const moonX = 760 - cameraX * 0.15;
+  const glow = ctx.createRadialGradient(moonX, 95, 20, moonX, 95, 125);
+  glow.addColorStop(0, "#d9f8ff55"); glow.addColorStop(1, "#7b8dff00");
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, WIDTH, 260);
+  ctx.fillStyle = "#e5f5ff"; ctx.beginPath(); ctx.arc(moonX, 95, 42, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#b9cfff"; ctx.beginPath(); ctx.arc(moonX - 13, 84, 8, 0, Math.PI * 2); ctx.arc(moonX + 15, 108, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#10183d99";
+  for (let i = 0; i < 12; i++) {
+    const x = i * 110 - cameraX * 0.08;
+    const height = 45 + (i * 23) % 65;
+    ctx.beginPath(); ctx.moveTo(x, 470); ctx.lineTo(x + 55, 470 - height); ctx.lineTo(x + 110, 470); ctx.fill();
+  }
+}
+
 function drawStars() {
-  ctx.fillStyle = "#ffffff99";
-  for (let i = 0; i < 55; i++) { const x = (i * 173) % WIDTH; const y = 25 + (i * 67) % 240; ctx.fillRect(x, y, 2, 2); }
+  for (let i = 0; i < 55; i++) {
+    ctx.fillStyle = i % 5 === 0 ? "#8be9fdcc" : "#ffffff99";
+    const x = (i * 173) % WIDTH; const y = 25 + (i * 67) % 240;
+    const size = i % 5 === 0 ? 3 : 2;
+    ctx.fillRect(x, y, size, size);
+  }
+}
+
+function drawPlatform(platform) {
+  const gradient = ctx.createLinearGradient(0, platform.y, 0, platform.y + platform.height);
+  gradient.addColorStop(0, "#263567"); gradient.addColorStop(1, "#151b3e");
+  ctx.fillStyle = gradient; ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+  ctx.fillStyle = "#69f0c1"; ctx.fillRect(platform.x, platform.y, platform.width, 6);
+  ctx.fillStyle = "#34558a"; ctx.fillRect(platform.x, platform.y + 8, platform.width, 3);
+  ctx.fillStyle = "#0a102b99";
+  for (let x = platform.x + 18; x < platform.x + platform.width; x += 42) ctx.fillRect(x, platform.y + 25, 2, platform.height - 25);
 }
 
 function drawEnemy(enemy) {
   if (!enemy.alive) return;
-  ctx.fillStyle = "#ef6683"; ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-  ctx.fillStyle = "#251e45"; ctx.fillRect(enemy.x + 7, enemy.y + 10, 6, 6); ctx.fillRect(enemy.x + 21, enemy.y + 10, 6, 6);
+  ctx.fillStyle = "#ff4f79"; ctx.fillRect(enemy.x, enemy.y + 5, enemy.width, enemy.height - 5);
+  ctx.fillStyle = "#ff9b6a"; ctx.fillRect(enemy.x + 5, enemy.y, enemy.width - 10, 8);
+  ctx.fillStyle = "#24163f"; ctx.fillRect(enemy.x + 7, enemy.y + 15, 6, 6); ctx.fillRect(enemy.x + 21, enemy.y + 15, 6, 6);
+  ctx.fillStyle = "#ffcf70"; ctx.fillRect(enemy.x + 8, enemy.y + 31, enemy.width - 16, 4);
 }
 
 function drawGoal() {
-  ctx.fillStyle = "#ffd166"; ctx.fillRect(2960, 300, 8, 170);
-  ctx.fillStyle = "#ff6b8a"; ctx.beginPath(); ctx.moveTo(2968, 300); ctx.lineTo(3050, 325); ctx.lineTo(2968, 350); ctx.fill();
+  ctx.shadowColor = "#69f0c1"; ctx.shadowBlur = 18;
+  ctx.fillStyle = "#69f0c1"; ctx.fillRect(2960, 300, 8, 170);
+  ctx.fillStyle = "#ff5c8a"; ctx.beginPath(); ctx.moveTo(2968, 300); ctx.lineTo(3050, 325); ctx.lineTo(2968, 350); ctx.fill();
+  ctx.shadowBlur = 0;
 }
 
 function drawPlayer() {
   if (player.invincible > 0 && Math.floor(player.invincible * 12) % 2) return;
-  ctx.fillStyle = "#7bdff2"; ctx.fillRect(player.x, player.y, player.width, player.height);
-  ctx.fillStyle = "#25234c"; ctx.fillRect(player.x + (player.facing > 0 ? 21 : 5), player.y + 11, 6, 6);
+  ctx.fillStyle = "#7bdff2"; ctx.fillRect(player.x, player.y + 7, player.width, player.height - 7);
+  ctx.fillStyle = "#d8f7ff"; ctx.fillRect(player.x + 5, player.y, player.width - 10, 10);
+  ctx.fillStyle = "#20204b"; ctx.fillRect(player.x + (player.facing > 0 ? 21 : 5), player.y + 14, 6, 6);
+  ctx.fillStyle = "#ff5c8a";
+  ctx.fillRect(player.x + (player.facing > 0 ? -7 : player.width), player.y + 20, 7, 18);
   if (player.attackTimer > 0) {
-    ctx.fillStyle = "#ffd166";
+    ctx.shadowColor = "#fff09a"; ctx.shadowBlur = 12;
+    ctx.fillStyle = "#fff09a";
     const x = player.facing > 0 ? player.x + player.width : player.x - 42;
     ctx.fillRect(x, player.y + 14, 42, 8);
+    ctx.shadowBlur = 0;
   }
 }
 
