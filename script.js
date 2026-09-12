@@ -289,6 +289,33 @@ restartButton.addEventListener("click", () => {
   resetGame();
 });
 
+function triggerJump() {
+  if (player.grounded && gameState === "playing") player.vy = -player.jump;
+}
+
+function triggerAttack() {
+  if (gameState === "playing") player.attackTimer = 0.18;
+}
+
+document.querySelectorAll(".touch-button").forEach((button) => {
+  const release = () => {
+    if (button.dataset.key) keys[button.dataset.key] = false;
+    button.classList.remove("is-pressed");
+  };
+
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    button.setPointerCapture(event.pointerId);
+    button.classList.add("is-pressed");
+    if (button.dataset.key) keys[button.dataset.key] = true;
+    if (button.dataset.action === "jump") triggerJump();
+    if (button.dataset.action === "attack") triggerAttack();
+  });
+  button.addEventListener("pointerup", release);
+  button.addEventListener("pointercancel", release);
+  button.addEventListener("lostpointercapture", release);
+});
+
 function loop(timestamp) {
   const dt = Math.min((timestamp - lastTime) / 1000 || 0, 0.033);
   lastTime = timestamp;
